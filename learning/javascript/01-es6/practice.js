@@ -9,7 +9,7 @@ console.log("count : ", count);
 
 // const
 const PI = 3.14;
-console.log("PI : ", PI);
+console.log("PI :", PI);
 // TypeError
 // PI = 3.14159;
 
