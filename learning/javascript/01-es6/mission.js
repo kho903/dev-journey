@@ -395,8 +395,8 @@ console.log("multiply using Implicit Return:", multiply(10, 20)); // 200
 // Mission 3
 // Use One Parameter Arrow Function
 // prettier-ignore
-const greet = name => console.log("Hello,", name);
-greet("JIHUN"); // Hello, JIHUN
+const arrowGreet = name => console.log("Hello,", name);
+arrowGreet("JIHUN"); // Hello, JIHUN
 
 // Mission 4
 // Return an Object from an Arrow Function
@@ -471,14 +471,14 @@ executeCallback(sayHello); // Hello
 */
 
 // Mission 2
-const sayHi = function () {
+const functionSayHi = function () {
   console.log("Hi");
 };
 function runFunction(callback) {
   callback();
 }
 
-runFunction(sayHi); // Hi
+runFunction(functionSayHi); // Hi
 /*
   Explain why a function can be passed as a value
   - In JavaScript, functions are first-class values
@@ -540,9 +540,9 @@ calculate(10, 20, (a, b) => a * b); // 200
 // Mission 6
 // Use Callback with `map()`
 
-const numbers = [1, 2, 3];
-const doubledNumbers = numbers.map((number) => number * 2);
-console.log(doubledNumbers);
+const arrowNumbers = [1, 2, 3];
+const doubledNumbersByArrow = arrowNumbers.map((number) => number * 2);
+console.log(doubledNumbersByArrow);
 /*
   Why map() uses a callback function
   - `map()` uses a callback function to decide how each element should be transformed
@@ -567,14 +567,14 @@ numbers.forEach((number) => {
 
 // Bonus Mission
 // Create a React-like Event Handler.
-const handleClick = () => {
+const arrowHandleClick = () => {
   console.log("clicked");
 };
 
 function simulateClick(callback) {
   callback();
 }
-simulateClick(handleClick); // clicked
+simulateClick(arrowHandleClick); // clicked
 /*
   Explain why this is similar to React's `onClick={handleClick}`
   - In React, `onClick={handleClick}` passes the function itself
