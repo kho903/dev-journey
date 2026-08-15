@@ -3,6 +3,7 @@ import PropsPractice from "./practice/02-props/Practice.jsx";
 import ChildrenPractice from "./practice/03-children-composition/Practice.jsx";
 import ArrayRenderingPractice from "./practice/04-array-rendering/Practice.jsx";
 import ConditionalRenderingPractice from "./practice/05-conditional-rendering/Practice.jsx";
+import DeveloperProfileMission from "./mission/01-developer-profile-cards/Mission.jsx";
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
       <ChildrenPractice />
       <ArrayRenderingPractice />
       <ConditionalRenderingPractice />
+      <DeveloperProfileMission />
     </section>
   );
 }
