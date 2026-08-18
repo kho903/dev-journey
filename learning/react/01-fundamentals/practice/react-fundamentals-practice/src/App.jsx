@@ -5,6 +5,7 @@ import ArrayRenderingPractice from "./practice/04-array-rendering/Practice.jsx";
 import ConditionalRenderingPractice from "./practice/05-conditional-rendering/Practice.jsx";
 import DeveloperProfileMission from "./mission/01-developer-profile-cards/Mission.jsx";
 import ReusableDashboardMission from "./mission/02-reusable-dashboard/Mission.jsx";
+import TeamDirectoryMission from "./mission/03-team-directory/Mission.jsx";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
       <ConditionalRenderingPractice />
       <DeveloperProfileMission />
       <ReusableDashboardMission />
+      <TeamDirectoryMission />
     </section>
   );
 }
