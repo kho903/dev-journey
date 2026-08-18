@@ -7,6 +7,7 @@ import DeveloperProfileMission from "./mission/01-developer-profile-cards/Missio
 import ReusableDashboardMission from "./mission/02-reusable-dashboard/Mission.jsx";
 import TeamDirectoryMission from "./mission/03-team-directory/Mission.jsx";
 import DeploymentDashboardMission from "./mission/04-deployment-dashboard/Mission.jsx";
+import ApplicationDashboardMission from "./mission/05-application-dashboard/Mission.jsx";
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
       <ReusableDashboardMission />
       <TeamDirectoryMission />
       <DeploymentDashboardMission />
+      <ApplicationDashboardMission />
     </section>
   );
 }
