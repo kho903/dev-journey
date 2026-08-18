@@ -6,6 +6,7 @@ import ConditionalRenderingPractice from "./practice/05-conditional-rendering/Pr
 import DeveloperProfileMission from "./mission/01-developer-profile-cards/Mission.jsx";
 import ReusableDashboardMission from "./mission/02-reusable-dashboard/Mission.jsx";
 import TeamDirectoryMission from "./mission/03-team-directory/Mission.jsx";
+import DeploymentDashboardMission from "./mission/04-deployment-dashboard/Mission.jsx";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
       <DeveloperProfileMission />
       <ReusableDashboardMission />
       <TeamDirectoryMission />
+      <DeploymentDashboardMission />
     </section>
   );
 }
