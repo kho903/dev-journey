@@ -9,6 +9,7 @@ import TeamDirectoryMission from "./mission/03-team-directory/Mission.jsx";
 import DeploymentDashboardMission from "./mission/04-deployment-dashboard/Mission.jsx";
 import ApplicationDashboardMission from "./mission/05-application-dashboard/Mission.jsx";
 import UserReview from "./review/01-fundamentals-debugging/Review.jsx";
+import ProjectList from "./review/03-final-debugging/Review.jsx";
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
       <DeploymentDashboardMission />
       <ApplicationDashboardMission />
       <UserReview />
+      <ProjectList />
     </section>
   );
 }
