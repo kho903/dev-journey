@@ -250,3 +250,425 @@ Updated UI
 React의 UI는 State의 현재 값을 기준으로 만들어짐
 
 따라서 화면을 직접 수정하는 방식보다 State를 변경하고 React가 새로운 State를 기반으로 화면을 다시 렌더링하도록 만드는 방식이 기본적인 React의 흐름
+
+## 2. useState
+
+### useState
+
+`useState`는 React Component에서 State를 생성하고 관리하기 위한 React Hook
+
+React에서 State가 필요한 경우 `useState`를 이용하여 State 값과 State를 변경하는 함수를 생성
+
+```jsx
+const [count, setCount] = useState(0);
+```
+
+기본 구조
+
+```text
+const [State, State 변경 함수] = useState(초기값);
+```
+
+각 요소의 역할
+
+```text
+count
+→ 현재 State 값
+
+setCount
+→ count State를 변경하기 위한 함수
+
+useState(0)
+→ count의 초기값을 0으로 설정
+```
+
+### Import useState
+
+`useState`는 React에서 제공하는 Hook이므로 먼저 import 필요
+
+```jsx
+import { useState } from "react";
+```
+
+예시
+
+```jsx
+import { useState } from "react";
+
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  return <p>{count}</p>;
+}
+
+export default Counter;
+```
+
+초기 렌더링 시
+
+```text
+useState(0)
+↓
+count = 0
+↓
+<p>{count}</p>
+↓
+화면에 0 출력
+```
+
+### State and Setter Function
+
+`useState`의 반환값은 두 개의 값을 가진 배열
+
+```jsx
+const result = useState(0);
+```
+
+개념적으로 다음과 같은 형태
+
+```jsx
+const [count, setCount] = useState(0);
+```
+
+JavaScript 배열 Destructuring과 동일한 문법
+
+```js
+const numbers = [10, 20];
+
+const [first, second] = numbers;
+```
+
+```text
+first = 10
+second = 20
+```
+
+따라서
+
+```jsx
+const [count, setCount] = useState(0);
+```
+
+는 `useState`가 반환한 값에서 현재 State와 State 변경 함수를 각각 받아 사용하는 구조
+
+### State Initial Value
+
+`useState()`의 Argument는 State의 초기값이며, Component의 초기 렌더링에서 State를 초기화할 때 사용
+
+숫자
+
+```jsx
+const [count, setCount] = useState(0);
+```
+
+문자열
+
+```jsx
+const [name, setName] = useState("JIHUN");
+```
+
+Boolean
+
+```jsx
+const [isLoggedIn, setIsLoggedIn] = useState(false);
+```
+
+배열
+
+```jsx
+const [skills, setSkills] = useState([]);
+```
+
+객체
+
+```jsx
+const [user, setUser] = useState({
+  name: "JIHUN",
+  role: "Backend Developer",
+});
+```
+
+State는 특정 타입만 사용할 수 있는 것이 아니라 JavaScript에서 사용하는 다양한 값을 저장 가능
+
+### Reading State
+
+State 값은 일반 JavaScript 변수처럼 JSX에서 사용 가능
+
+```jsx
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  return (
+    <section>
+      <p>{count}</p>
+    </section>
+  );
+}
+```
+
+초기 화면
+
+```text
+0
+```
+
+State 값이 변경되면 새로운 State 값을 기준으로 Component가 다시 렌더링됨
+
+### Updating State
+
+State를 변경할 때 State 값을 직접 수정하지 않고 Setter 함수 사용
+
+잘못된 방식
+
+```jsx
+count++;
+```
+
+또는
+
+```jsx
+count = count + 1;
+```
+
+`count`는 직접 대입하여 변경하는 값이 아님
+
+State 변경 함수 사용
+
+```jsx
+setCount(count + 1);
+```
+
+예시
+
+```jsx
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  function increase() {
+    setCount(count + 1);
+  }
+
+  return (
+    <section>
+      <p>{count}</p>
+      <button onClick={increase}>Increase</button>
+    </section>
+  );
+}
+```
+
+동작 흐름
+
+```text
+초기 State
+count = 0
+↓
+Increase 버튼 클릭
+↓
+increase() 실행
+↓
+setCount(count + 1)
+↓
+setCount(1)
+↓
+React에 State Update 요청
+↓
+Component 다시 렌더링
+↓
+count = 1
+↓
+화면에 1 출력
+```
+
+### State Update and Re-render
+
+State Setter 함수를 호출하면 React에 State 변경을 요청
+
+```jsx
+setCount(1);
+```
+
+React는 새로운 State를 기준으로 Component를 다시 렌더링
+
+```text
+setCount()
+↓
+State Update
+↓
+Re-render
+↓
+새로운 State 값을 이용하여 JSX 생성
+↓
+UI 업데이트
+```
+
+React에서는 화면의 값을 직접 찾아서 수정하기보다 State를 변경하여 UI가 다시 만들어지도록 구성
+
+```text
+State
+↓
+UI
+```
+
+State가 화면의 기준이 되는 구조
+
+### Multiple State Values
+
+하나의 Component에서 여러 State 사용 가능
+
+```jsx
+function Profile() {
+  const [name, setName] = useState("JIHUN");
+  const [age, setAge] = useState(29);
+  const [isActive, setIsActive] = useState(true);
+
+  return (
+    <section>
+      <h2>{name}</h2>
+      <p>{age}</p>
+      <p>{isActive ? "Active" : "Offline"}</p>
+    </section>
+  );
+}
+```
+
+각 State는 각각 자신의 Setter 함수로 변경
+
+```text
+name
+↔ setName
+
+age
+↔ setAge
+
+isActive
+↔ setIsActive
+```
+
+### State Naming Convention
+
+일반적으로 State 이름과 Setter 함수 이름을 다음 형태로 작성
+
+```text
+State
+→ value
+
+Setter
+→ set + State 이름
+```
+
+예시
+
+```jsx
+const [count, setCount] = useState(0);
+
+const [name, setName] = useState("");
+
+const [isOpen, setIsOpen] = useState(false);
+
+const [users, setUsers] = useState([]);
+```
+
+Setter 함수의 `set` 뒤에는 State 이름을 대문자로 시작하는 형태를 주로 사용
+
+```text
+count → setCount
+name → setName
+user → setUser
+isActive → setIsActive
+```
+
+### Rules of Hooks
+
+`useState`와 같은 React Hook은 React Function Component 또는 Custom Hook의 최상위에서 호출
+
+권장
+
+```jsx
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  return <p>{count}</p>;
+}
+```
+
+조건문 내부에서 Hook 호출 금지
+
+```jsx
+function Counter({ isActive }) {
+  if (isActive) {
+    const [count, setCount] = useState(0);
+  }
+
+  return <p>Counter</p>;
+}
+```
+
+반복문 내부에서도 Hook 호출 금지
+
+```jsx
+for (...) {
+    const [count, setCount] = useState(0);
+}
+```
+
+Hook 호출 순서를 React가 렌더링마다 일관되게 추적할 수 있도록 Component 최상위에서 호출
+
+### Core Concept
+
+`useState`의 기본 흐름
+
+```text
+useState(initialValue)
+↓
+State 생성
+↓
+현재 State 값 사용
+↓
+사용자 Event 발생
+↓
+Setter 함수 호출
+↓
+State Update
+↓
+Re-render
+↓
+새로운 State 기반 UI 출력
+```
+
+가장 기본적인 형태
+
+```jsx
+import { useState } from "react";
+
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  function increase() {
+    setCount(count + 1);
+  }
+
+  return (
+    <section>
+      <p>{count}</p>
+      <button onClick={increase}>Increase</button>
+    </section>
+  );
+}
+```
+
+핵심
+
+```text
+const [count, setCount] = useState(0);
+      ↓        ↓                 ↓
+   State    Setter           Initial Value
+```
+
+State는 직접 변경하지 않고 Setter 함수를 통해 변경
+
+```text
+count++               X
+
+setCount(count + 1)   O
+```
