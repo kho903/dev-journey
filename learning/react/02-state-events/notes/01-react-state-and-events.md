@@ -672,3 +672,667 @@ count++               X
 
 setCount(count + 1)   O
 ```
+
+## 3. Event Handling
+
+### Event Handling
+
+Event는 사용자가 화면에서 발생시키는 동작
+
+대표적인 Event
+
+- 버튼 클릭
+- Input 입력
+- Form 제출
+- Mouse 이동
+- Keyboard 입력
+
+React에서는 JSX Element에 Event Handler를 연결하여 사용자 Event 처리
+
+```jsx
+<button onClick={handleClick}>Click</button>
+```
+
+기본 흐름
+
+```text
+User Action
+↓
+Event 발생
+↓
+Event Handler 실행
+↓
+State 변경 또는 Logic 실행
+↓
+필요한 경우 Re-render
+```
+
+### onClick
+
+`onClick`은 Element를 클릭했을 때 실행할 함수를 지정하는 React Event
+
+예시
+
+```jsx
+function Button() {
+  function handleClick() {
+    console.log("Button Clicked");
+  }
+
+  return <button onClick={handleClick}>Click</button>;
+}
+```
+
+버튼 클릭 시
+
+```text
+Click
+↓
+onClick Event 발생
+↓
+handleClick 실행
+↓
+Console 출력
+```
+
+```text
+Button Clicked
+```
+
+React Event 이름은 일반적으로 camelCase 사용
+
+```text
+onclick     X
+onClick     O
+
+onchange    X
+onChange    O
+```
+
+### Event Handler Function
+
+Event Handler는 Event가 발생했을 때 실행되는 함수
+
+예시
+
+```jsx
+function handleClick() {
+  console.log("Clicked");
+}
+```
+
+JSX에서 Event Handler 연결
+
+```jsx
+<button onClick={handleClick}>Click</button>
+```
+
+여기서 중요한 점은 함수를 실행하는 것이 아니라 함수 자체를 전달한다는 점
+
+```jsx
+onClick = { handleClick };
+```
+
+버튼이 클릭되었을 때 React가 `handleClick` 함수를 실행
+
+### handleClick vs handleClick()
+
+다음 두 코드는 의미가 다름
+
+```jsx
+onClick = { handleClick };
+```
+
+```jsx
+onClick={handleClick()}
+```
+
+올바른 방식
+
+```jsx
+<button onClick={handleClick}>Click</button>
+```
+
+`handleClick` 함수 자체를 Event Handler로 전달
+
+```text
+Component Render
+↓
+handleClick 함수 전달
+↓
+사용자가 버튼 클릭
+↓
+handleClick 실행
+```
+
+잘못된 방식
+
+```jsx
+<button onClick={handleClick()}>Click</button>
+```
+
+`handleClick()`을 작성하면 Component가 렌더링되는 시점에 함수가 즉시 실행됨
+
+```text
+Component Render
+↓
+handleClick() 실행
+↓
+함수의 반환값이 onClick에 전달
+```
+
+따라서 일반적인 Event Handler 연결에서는 함수 호출이 아니라 함수 자체 전달
+
+```text
+onClick={handleClick}
+→ Event 발생 시 실행할 함수 전달
+
+onClick={handleClick()}
+→ Render 시 handleClick을 즉시 실행하고
+  그 반환값을 onClick에 전달
+```
+
+### Inline Event Handler
+
+Event Handler를 JSX 내부에서 Arrow Function으로 작성 가능
+
+```jsx
+<button onClick={() => console.log("Clicked")}>Click</button>
+```
+
+State 변경 예시
+
+```jsx
+const [count, setCount] = useState(0);
+
+return <button onClick={() => setCount(count + 1)}>Increase</button>;
+```
+
+Arrow Function을 사용하면 Event가 발생했을 때 내부 코드 실행
+
+```text
+Render
+↓
+Arrow Function 전달
+↓
+Click
+↓
+Arrow Function 실행
+↓
+setCount(count + 1)
+```
+
+### Passing Arguments to Event Handler
+
+Event Handler에 Argument를 전달해야 하는 경우 Arrow Function 사용
+
+```jsx
+function greet(name) {
+  console.log(`Hello ${name}`);
+}
+```
+
+잘못된 방식
+
+```jsx
+<button onClick={greet("JIHUN")}>Greeting</button>
+```
+
+렌더링 시 `greet("JIHUN")`이 즉시 실행됨
+
+올바른 방식
+
+```jsx
+<button onClick={() => greet("JIHUN")}>Greeting</button>
+```
+
+동작 흐름
+
+```text
+Click
+↓
+Arrow Function 실행
+↓
+greet("JIHUN")
+↓
+Hello JIHUN
+```
+
+### Event Handling with State
+
+Event Handling은 State와 함께 사용하는 경우가 많음
+
+```jsx
+import { useState } from "react";
+
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  function increase() {
+    setCount(count + 1);
+  }
+
+  return (
+    <section>
+      <p>{count}</p>
+      <button onClick={increase}>Increase</button>
+    </section>
+  );
+}
+```
+
+동작 흐름
+
+```text
+count = 0
+↓
+사용자 Click
+↓
+onClick
+↓
+increase()
+↓
+setCount(count + 1)
+↓
+State Update
+↓
+Re-render
+↓
+count = 1
+```
+
+React의 Interactive UI에서 가장 기본적인 흐름
+
+```text
+Event
+↓
+State Update
+↓
+Re-render
+↓
+UI Update
+```
+
+### Toggle with Event
+
+Boolean State를 이용하여 Toggle UI 구현 가능
+
+```jsx
+import { useState } from "react";
+
+function Toggle() {
+  const [isOpen, setIsOpen] = useState(false);
+
+  function toggle() {
+    setIsOpen(!isOpen);
+  }
+
+  return (
+    <section>
+      <button onClick={toggle}>Toggle</button>
+
+      <p>{isOpen ? "Open" : "Closed"}</p>
+    </section>
+  );
+}
+```
+
+초기 상태
+
+```text
+isOpen = false
+↓
+Closed
+```
+
+버튼 클릭
+
+```text
+toggle()
+↓
+setIsOpen(!false)
+↓
+setIsOpen(true)
+↓
+Re-render
+↓
+Open
+```
+
+다시 클릭
+
+```text
+toggle()
+↓
+setIsOpen(!true)
+↓
+setIsOpen(false)
+↓
+Re-render
+↓
+Closed
+```
+
+### onChange
+
+`onChange`는 Input 등의 값이 변경될 때 사용하는 React Event
+React의 text Input에서 `onChange`는 사용자가 값을 입력하여 값이 변경될 때마다 발생
+
+예시
+
+```jsx
+function InputExample() {
+  function handleChange(event) {
+    console.log(event.target.value);
+  }
+
+  return <input type="text" onChange={handleChange} />;
+}
+```
+
+사용자가 Input에 값을 입력하면 `handleChange` 실행
+
+```text
+사용자 입력
+↓
+onChange
+↓
+handleChange(event)
+↓
+event.target.value
+↓
+현재 Input 값
+```
+
+### Event Object
+
+React Event Handler는 Event 정보를 담고 있는 객체를 Argument로 받을 수 있음
+
+```jsx
+function handleChange(event) {
+  console.log(event);
+}
+```
+
+Input의 현재 값 확인
+
+```jsx
+function handleChange(event) {
+  console.log(event.target.value);
+}
+```
+
+예를 들어 사용자가 다음 값을 입력
+
+```text
+React
+```
+
+다음 값으로 접근 가능
+
+```jsx
+event.target.value;
+```
+
+결과
+
+```text
+React
+```
+
+자주 사용하는 형태
+
+```jsx
+function handleChange(event) {
+  const value = event.target.value;
+}
+```
+
+### onChange with State
+
+Input 값을 State와 연결 가능
+
+```jsx
+import { useState } from "react";
+
+function NameInput() {
+  const [name, setName] = useState("");
+
+  function handleChange(event) {
+    setName(event.target.value);
+  }
+
+  return (
+    <section>
+      <input type="text" value={name} onChange={handleChange} />
+
+      <p>{name}</p>
+    </section>
+  );
+}
+```
+
+사용자가 `JIHUN` 입력
+
+```text
+Input 입력
+↓
+onChange
+↓
+handleChange(event)
+↓
+event.target.value = "JIHUN"
+↓
+setName("JIHUN")
+↓
+State Update
+↓
+Re-render
+↓
+화면에 JIHUN 출력
+```
+
+이와 같이 Input의 값과 React State를 연결하는 방식을 Controlled Input이라고 함
+
+Controlled Input에 대해서는 다음 Section에서 자세히 학습
+
+### Event Handler Naming
+
+Event Handler 함수는 일반적으로 `handle` 접두사를 붙여 작성
+
+```jsx
+function handleClick() {}
+
+function handleChange() {}
+
+function handleSubmit() {}
+```
+
+Element의 Event Prop에는 `on` 접두사 사용
+
+```jsx
+onClick = { handleClick };
+
+onChange = { handleChange };
+
+onSubmit = { handleSubmit };
+```
+
+일반적인 Naming 형태
+
+```text
+Event Prop
+onClick
+
+↓
+
+Handler Function
+handleClick
+```
+
+```text
+Event Prop
+onChange
+
+↓
+
+Handler Function
+handleChange
+```
+
+### Event Handler as Props
+
+Event Handler 함수 역시 Props로 자식 Component에 전달 가능
+
+```jsx
+function Button({ onClick }) {
+  return <button onClick={onClick}>Click</button>;
+}
+```
+
+부모 Component
+
+```jsx
+function App() {
+  function handleClick() {
+    console.log("Clicked");
+  }
+
+  return <Button onClick={handleClick} />;
+}
+```
+
+데이터 흐름
+
+```text
+App
+↓
+handleClick 함수
+↓
+Button의 onClick Props
+↓
+button의 onClick
+↓
+Click
+↓
+handleClick 실행
+```
+
+함수도 JavaScript 값이므로 Props로 전달 가능
+
+### Common Mistakes
+
+Event Handler를 즉시 실행
+
+```jsx
+<button onClick={handleClick()}>Click</button>
+```
+
+잘못된 이유
+
+```text
+Click 시 실행되는 것이 아니라
+Render 시 바로 실행됨
+```
+
+수정
+
+```jsx
+<button onClick={handleClick}>Click</button>
+```
+
+Argument가 필요한 경우
+
+```jsx
+<button onClick={() => handleClick(1)}>Click</button>
+```
+
+문자열로 Event Handler 작성
+
+```jsx
+<button onClick="handleClick()">Click</button>
+```
+
+React JSX에서는 JavaScript 함수를 전달
+
+```jsx
+<button onClick={handleClick}>Click</button>
+```
+
+### Core Concept
+
+React Event Handling의 기본 흐름
+
+```text
+User Action
+↓
+React Event
+↓
+Event Handler
+↓
+Logic
+↓
+State Update
+↓
+Re-render
+↓
+Updated UI
+```
+
+기본 패턴
+
+```jsx
+function Component() {
+  const [state, setState] = useState(initialValue);
+
+  function handleEvent() {
+    setState(newValue);
+  }
+
+  return <button onClick={handleEvent}>Update</button>;
+}
+```
+
+핵심 구분
+
+```text
+handleClick
+→ 함수 자체
+
+handleClick()
+→ 함수 호출
+```
+
+Event Handler에는 일반적으로 함수 자체 전달
+
+```jsx
+onClick = { handleClick };
+```
+
+Argument가 필요한 경우 Arrow Function 사용
+
+```jsx
+onClick={() => handleClick(value)}
+```
+
+Input의 값 변경 확인
+
+```jsx
+onChange = { handleChange };
+```
+
+```jsx
+function handleChange(event) {
+  console.log(event.target.value);
+}
+```
+
+React의 Interactive UI에서 가장 기본적인 관계
+
+```text
+Event
+↓
+State
+↓
+UI
+```
