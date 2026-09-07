@@ -1336,3 +1336,666 @@ State
 ↓
 UI
 ```
+
+## 4. Controlled Inputs and Forms
+
+### Controlled Input
+
+Controlled Input은 Input의 값을 React State가 관리하는 방식
+
+HTML Input 자체가 값을 독립적으로 관리하도록 두는 것이 아니라 React State와 Input의 값을 연결
+
+기본 구조
+
+```jsx
+const [name, setName] = useState("");
+
+<input
+  type="text"
+  value={name}
+  onChange={(event) => setName(event.target.value)}
+/>;
+```
+
+핵심 관계
+
+```text
+State
+↓
+value
+↓
+Input
+
+Input 변경
+↓
+onChange
+↓
+Setter
+↓
+State 변경
+↓
+Re-render
+↓
+새로운 State가 Input value에 반영
+```
+
+Controlled Input의 핵심은 `value`와 `onChange`
+
+```jsx
+<input type="text" value={name} onChange={handleChange} />
+```
+
+`value`
+
+```text
+Input에 표시할 값을 State에서 가져옴
+```
+
+`onChange`
+
+```text
+사용자가 Input 값을 변경하면 Event Handler 실행
+```
+
+예시
+
+```jsx
+function NameInput() {
+  const [name, setName] = useState("");
+
+  function handleChange(event) {
+    setName(event.target.value);
+  }
+
+  return (
+    <section>
+      <input type="text" value={name} onChange={handleChange} />
+
+      <p>{name}</p>
+    </section>
+  );
+}
+```
+
+동작 흐름
+
+```text
+초기 State
+name = ""
+↓
+사용자가 J 입력
+↓
+onChange 발생
+↓
+event.target.value = "J"
+↓
+setName("J")
+↓
+State Update
+↓
+Re-render
+↓
+value={name}
+↓
+Input에 J 표시
+```
+
+### Controlled Input Flow
+
+사용자가 `JIHUN`을 입력하는 경우
+
+```text
+J
+↓
+onChange
+↓
+setName("J")
+↓
+Re-render
+
+JI
+↓
+onChange
+↓
+setName("JI")
+↓
+Re-render
+
+JIH
+↓
+onChange
+↓
+setName("JIH")
+↓
+Re-render
+```
+
+Input의 현재 값이 React State에 저장됨
+
+```text
+State
+↓
+Input value
+
+사용자 입력
+↓
+onChange
+↓
+State Update
+```
+
+정확히는 State가 Input의 값을 결정하고 Input의 변경 Event가 다시 State를 갱신하는 흐름
+
+### Why Controlled Inputs Are Useful
+
+Input 값을 State로 관리하면 현재 입력값을 React Component에서 쉽게 사용 가능
+
+예시
+
+- 입력값 검증
+- 글자 수 확인
+- 버튼 활성화 여부 결정
+- Form 제출
+- 입력값 초기화
+- 여러 Input 관리
+- 조건부 UI 출력
+
+예시
+
+```jsx
+function NameInput() {
+  const [name, setName] = useState("");
+
+  return (
+    <section>
+      <input value={name} onChange={(event) => setName(event.target.value)} />
+
+      <p>Length: {name.length}</p>
+    </section>
+  );
+}
+```
+
+State의 값을 이용하여 다른 UI도 함께 계산 가능
+
+### Form
+
+Form은 여러 Input 값을 묶어서 사용자 데이터를 입력받을 때 사용
+
+React에서도 HTML의 `<form>` Element 사용
+
+```jsx
+<form>
+  <input type="text" />
+  <button type="submit">Submit</button>
+</form>
+```
+
+Form 제출 시 `onSubmit` Event 사용
+
+```jsx
+<form onSubmit={handleSubmit}>
+```
+
+### onSubmit
+
+`onSubmit`은 Form이 제출될 때 실행되는 Event
+
+```jsx
+function handleSubmit(event) {
+  console.log("Submit");
+}
+```
+
+```jsx
+<form onSubmit={handleSubmit}>
+  <button type="submit">Submit</button>
+</form>
+```
+
+Submit 버튼 클릭
+
+```text
+Form Submit
+↓
+onSubmit
+↓
+handleSubmit(event)
+```
+
+### preventDefault
+
+HTML form은 기본적으로 Submit 시 페이지를 다시 요청하거나 새로고침하는 동작을 수행할 수 있음
+
+React에서는 일반적으로 Form Submit Event에서 이 기본 동작을 막고 JavaScript로 제출 Logic 처리
+
+```jsx
+function handleSubmit(event) {
+  event.preventDefault();
+}
+```
+
+예시
+
+```jsx
+function LoginForm() {
+  const [username, setUsername] = useState("");
+
+  function handleSubmit(event) {
+    event.preventDefault();
+    console.log(username);
+  }
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        value={username}
+        onChange={(event) => setUsername(event.target.value)}
+      />
+
+      <button type="submit">Login</button>
+    </form>
+  );
+}
+```
+
+동작 흐름
+
+```text
+Submit
+↓
+onSubmit
+↓
+handleSubmit(event)
+↓
+event.preventDefault()
+↓
+브라우저 기본 Submit 동작 방지
+↓
+React / JavaScript Logic 실행
+```
+
+### Multiple Inputs with Multiple State
+
+여러 Input을 각각 별도의 State로 관리 가능
+
+```jsx
+function SignupForm() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+
+  return (
+    <form>
+      <input value={name} onChange={(event) => setName(event.target.value)} />
+      <input value={email} onChange={(event) => setEmail(event.target.value)} />
+    </form>
+  );
+}
+```
+
+각 Input과 State가 각각 연결
+
+```text
+name Input
+↔
+name State
+
+email Input
+↔
+email State
+```
+
+Input 개수가 적은 경우 이해하기 쉽고 관리도 단순한 방식
+
+### Form Submit with Multiple State
+
+예시
+
+```jsx
+function SignupForm() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+
+  function handleSubmit(event) {
+    event.preventDefault();
+
+    console.log(name);
+    console.log(email);
+  }
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        type="text"
+        value={name}
+        onChange={(event) => setName(event.target.value)}
+      />
+
+      <input
+        type="email"
+        value={email}
+        onChange={(event) => setEmail(event.target.value)}
+      />
+
+      <button type="submit">Submit</button>
+    </form>
+  );
+}
+```
+
+Submit 시 현재 State 값을 이용 가능
+
+```text
+name State
++
+email State
+↓
+handleSubmit
+↓
+서버 전송 또는 다른 Logic 처리
+```
+
+### Resetting Input State
+
+Form 제출 후 Input 값을 초기화하려면 Setter 함수 사용
+
+```jsx
+function handleSubmit(event) {
+  event.preventDefault();
+
+  console.log(name);
+
+  setName("");
+}
+```
+
+State가 빈 문자열로 변경
+
+```text
+setName("")
+↓
+State Update
+↓
+Re-render
+↓
+value={name}
+↓
+Input도 빈 값으로 변경
+```
+
+Controlled Input이기 때문에 State를 변경하면 Input 화면도 변경됨
+
+### Checkbox
+
+Checkbox도 State로 관리 가능
+
+```jsx
+function Agreement() {
+  const [isAgreed, setIsAgreed] = useState(false);
+
+  return (
+    <label>
+      <input
+        type="checkbox"
+        checked={isAgreed}
+        onChange={(event) => setIsAgreed(event.target.checked)}
+      />
+      Agree
+    </label>
+  );
+}
+```
+
+Text Input에서는 주로
+
+```jsx
+event.target.value;
+```
+
+사용
+
+Checkbox에서는 주로
+
+```jsx
+event.target.checked;
+```
+
+사용
+
+```text
+Text Input
+→ value
+
+Checkbox
+→ checked
+```
+
+### Select
+
+`select`도 Controlled Input으로 관리 가능
+
+```jsx
+function RoleSelect() {
+  const [role, setRole] = useState("backend");
+
+  return (
+    <select value={role} onChange={(event) => setRole(event.target.value)}>
+      <option value="backend">Backend</option>
+
+      <option value="frontend">Frontend</option>
+    </select>
+  );
+}
+```
+
+현재 선택된 값은 State에서 관리
+
+```text
+role State
+↓
+select value
+```
+
+사용자가 새로운 Option 선택
+
+```text
+onChange
+↓
+event.target.value
+↓
+setRole()
+↓
+State Update
+```
+
+### Textarea
+
+`textarea` 역시 Controlled Input으로 사용 가능
+
+```jsx
+function Introduction() {
+  const [content, setContent] = useState("");
+
+  return (
+    <textarea
+      value={content}
+      onChange={(event) => setContent(event.target.value)}
+    />
+  );
+}
+```
+
+Input과 동일한 방식으로 `value`와 `onChange` 사용
+
+### Controlled vs Uncontrolled Input
+
+Controlled Input
+
+```jsx
+const [name, setName] = useState("");
+
+<input value={name} onChange={(event) => setName(event.target.value)} />;
+```
+
+```text
+React State가 Input 값 관리
+```
+
+Uncontrolled Input
+
+```text
+DOM 자체가 Input 값 관리
+```
+
+Controlled Input은 React State를 통해 현재 값을 바로 확인하고 제어할 수 있다는 장점
+
+이번 학습에서는 Controlled Input 중심으로 사용
+
+### Common Mistakes
+
+`value`만 설정하고 `onChange`를 작성하지 않는 경우
+
+```jsx
+<input value={name} />
+```
+
+State가 변경되지 않기 때문에 사용자가 Input 값을 정상적으로 수정할 수 없는 읽기 전용 형태가 될 수 있음
+
+수정
+
+```jsx
+<input value={name} onChange={(event) => setName(event.target.value)} />
+```
+
+Form Submit에서 `preventDefault()` 누락
+
+```jsx
+function handleSubmit(event) {
+  console.log("Submit");
+}
+```
+
+일반적인 React Form 처리에서는
+
+```jsx
+function handleSubmit(event) {
+  event.preventDefault();
+
+  console.log("Submit");
+}
+```
+
+형태 사용
+
+---
+
+Event Handler를 호출한 결과를 전달
+
+```jsx
+<form onSubmit={handleSubmit()}>
+```
+
+일반적인 Event Handler 연결에서는 잘못된 방식
+
+```jsx
+<form onSubmit={handleSubmit}>
+```
+
+사용
+
+---
+
+Checkbox에서 `value` 사용
+
+```jsx
+onChange={(event) => setIsAgreed(event.target.value)}
+```
+
+Checkbox 상태를 Boolean으로 관리할 때는 일반적으로
+
+```jsx
+onChange={(event) => setIsAgreed(event.target.checked)}
+```
+
+사용
+
+---
+
+### Core Concept
+
+Controlled Input의 핵심 흐름
+
+```text
+State
+↓
+Input value
+↓
+사용자 입력
+↓
+onChange
+↓
+Event Handler
+↓
+Setter
+↓
+State Update
+↓
+Re-render
+↓
+Input value 변경
+```
+
+Form의 핵심 흐름
+
+```text
+Input
+↓
+State
+↓
+Submit
+↓
+onSubmit
+↓
+handleSubmit
+↓
+preventDefault
+↓
+State 값 사용
+```
+
+기본 패턴
+
+```jsx
+function Form() {
+  const [value, setValue] = useState("");
+
+  function handleSubmit(event) {
+    event.preventDefault();
+
+    console.log(value);
+  }
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input value={value} onChange={(event) => setValue(event.target.value)} />
+
+      <button type="submit">Submit</button>
+    </form>
+  );
+}
+```
+
+핵심
+
+```text
+value
+→ State 값을 Input에 전달
+
+onChange
+→ Input 변경을 State에 반영
+
+onSubmit
+→ Form 제출 처리
+
+preventDefault()
+→ 브라우저 기본 Submit 동작 방지
+```
