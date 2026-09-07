@@ -1999,3 +1999,544 @@ onSubmit
 preventDefault()
 → 브라우저 기본 Submit 동작 방지
 ```
+
+## 5. Functional State Updates
+
+### Functional State Update
+
+React State를 이전 State 값을 기준으로 변경해야 하는 경우 Setter 함수에 새로운 값을 직접 전달하는 대신 함수를 전달할 수 있음
+
+기본 형태
+
+```jsx
+setCount((prevCount) => prevCount + 1);
+```
+
+구조
+
+```text
+setState((previousState) => newState);
+```
+
+예시
+
+```jsx
+const [count, setCount] = useState(0);
+
+setCount((prevCount) => prevCount + 1);
+```
+
+```text
+prevCount
+→ 이전 State 값
+
+prevCount + 1
+→ 새로운 State 값
+```
+
+---
+
+### Direct State Update
+
+일반적인 State 변경
+
+```jsx
+setCount(count + 1);
+```
+
+현재 렌더링에서 가지고 있는 `count` 값을 이용하여 새로운 State를 계산
+
+예시
+
+```text
+count = 0
+↓
+setCount(count + 1)
+↓
+setCount(1)
+```
+
+간단한 State 변경에서는 사용할 수 있는 정상적인 방식
+
+### Functional State Update
+
+이전 State를 기준으로 새로운 State를 계산하는 경우
+
+```jsx
+setCount((prevCount) => prevCount + 1);
+```
+
+React가 Setter 함수에 이전 State 값을 전달
+
+```text
+이전 State
+↓
+prevCount
+↓
+prevCount + 1
+↓
+새로운 State
+```
+
+예시
+
+```text
+prevCount = 0
+↓
+prevCount + 1
+↓
+1
+```
+
+### Multiple State Updates
+
+다음 코드 확인
+
+```jsx
+function increaseThreeTimes() {
+  setCount(count + 1);
+  setCount(count + 1);
+  setCount(count + 1);
+}
+```
+
+처음 `count`가 `0`이라고 가정
+
+직관적으로는
+
+```text
+0
+↓
+1
+↓
+2
+↓
+3
+```
+
+이 될 것처럼 보일 수 있음
+
+하지만 각 `setCount(count + 1)`은 현재 렌더링에서 동일한 `count` 값을 참조할 수 있음
+
+```text
+현재 렌더링의 count = 0
+
+setCount(0 + 1)
+setCount(0 + 1)
+setCount(0 + 1)
+```
+
+따라서 세 번 모두 같은 값인 `1`을 업데이트하도록 요청할 수 있음
+
+### Multiple Functional Updates
+
+이전 State를 이용하여 연속으로 업데이트하려면 Functional State Update 사용
+
+```jsx
+function increaseThreeTimes() {
+  setCount((prevCount) => prevCount + 1);
+  setCount((prevCount) => prevCount + 1);
+  setCount((prevCount) => prevCount + 1);
+}
+```
+
+동작 개념
+
+```text
+초기 State
+0
+
+↓
+
+첫 번째 Update
+prevCount = 0
+→ 1
+
+↓
+
+두 번째 Update
+prevCount = 1
+→ 2
+
+↓
+
+세 번째 Update
+prevCount = 2
+→ 3
+```
+
+최종 결과
+
+```text
+3
+```
+
+### Why Functional Updates Are Useful
+
+State Update는 즉시 현재 변수 값을 직접 변경하는 방식으로 동작한다고 생각하면 안 됨
+
+React는 State Update 요청을 처리하여 이후 렌더링에 반영
+
+따라서 이전 State를 기준으로 새로운 State를 계산해야 하는 경우 Functional State Update를 사용하면 더 안전한 형태
+
+```jsx
+setCount((prevCount) => prevCount + 1);
+```
+
+핵심
+
+```text
+현재 렌더링에서 읽은 State를 이용하여 값 계산
+→ setCount(count + 1)
+
+이전 State를 기준으로 다음 State 계산
+→ setCount((prevCount) => prevCount + 1)
+```
+
+특히 같은 Event Handler 안에서 State를 여러 번 업데이트하는 경우 Functional State Update가 중요
+
+### Previous State Parameter
+
+Functional State Update의 Parameter 이름은 자유롭게 지정 가능
+
+```jsx
+setCount((prevCount) => prevCount + 1);
+```
+
+```jsx
+setCount((previous) => previous + 1);
+```
+
+```jsx
+setCount((prev) => prev + 1);
+```
+
+모두 같은 의미
+
+일반적으로 다음 형태를 많이 사용
+
+```text
+prev
+prevCount
+previousCount
+```
+
+State 이름을 알아보기 쉽게 포함하는 형태 권장
+
+```jsx
+setCount((prevCount) => prevCount + 1);
+```
+
+### Toggle with Functional Update
+
+Boolean State도 이전 State를 기준으로 변경 가능
+
+기존 방식
+
+```jsx
+function toggle() {
+  setIsOpen(!isOpen);
+}
+```
+
+Functional State Update
+
+```jsx
+function toggle() {
+  setIsOpen((prevIsOpen) => !prevIsOpen);
+}
+```
+
+동작
+
+```text
+prevIsOpen = false
+↓
+!false
+↓
+true
+```
+
+다시 실행
+
+```text
+prevIsOpen = true
+↓
+!true
+↓
+false
+```
+
+현재 State를 반전하는 Toggle처럼 이전 State에 의존하는 경우 Functional Update 사용 가능
+
+### Event Handling Example
+
+```jsx
+import { useState } from "react";
+
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  function handleIncrease() {
+    setCount((prevCount) => prevCount + 1);
+  }
+
+  function handleDecrease() {
+    setCount((prevCount) => prevCount - 1);
+  }
+
+  return (
+    <section>
+      <p>{count}</p>
+
+      <button onClick={handleIncrease}>Increase</button>
+
+      <button onClick={handleDecrease}>Decrease</button>
+    </section>
+  );
+}
+```
+
+동작 흐름
+
+```text
+Click
+↓
+Event Handler
+↓
+Setter 호출
+↓
+이전 State 전달
+↓
+새로운 State 계산
+↓
+State Update
+↓
+Re-render
+```
+
+### Direct Update vs Functional Update
+
+Direct Update
+
+```jsx
+setCount(count + 1);
+```
+
+특징
+
+```text
+현재 렌더링의 count 값을 사용
+```
+
+Functional Update
+
+```jsx
+setCount((prevCount) => prevCount + 1);
+```
+
+특징
+
+```text
+React가 제공하는 이전 State 값을 사용
+```
+
+비교
+
+```text
+setCount(count + 1)
+
+count
+↓
+현재 렌더링에서 읽은 값
+↓
+새로운 값 계산
+```
+
+```text
+setCount((prevCount) => prevCount + 1)
+
+React가 이전 State 전달
+↓
+prevCount
+↓
+새로운 값 계산
+```
+
+### When to Use Functional Updates
+
+이전 State 값을 기준으로 새로운 State를 만드는 경우 Functional Update 사용 권장
+
+예시
+
+Counter
+
+```jsx
+setCount((prevCount) => prevCount + 1);
+```
+
+Toggle
+
+```jsx
+setIsOpen((prevIsOpen) => !prevIsOpen);
+```
+
+기존 배열에 새로운 데이터를 추가하는 경우
+
+```jsx
+setUsers((prevUsers) => [...prevUsers, newUser]);
+```
+
+기존 객체 값을 기반으로 변경하는 경우
+
+```jsx
+setUser((prevUser) => ({
+  ...prevUser,
+  name: "JIHUN",
+}));
+```
+
+배열과 객체 State는 이후 Section
+
+### State Update Queue
+
+같은 Event Handler 안에서 여러 State Update가 발생하면 React는 Update 요청을 처리
+
+Functional State Update를 사용하면 각 Update가 이전 Update 결과를 기반으로 계산 가능
+
+```jsx
+setCount((prev) => prev + 1);
+setCount((prev) => prev + 1);
+setCount((prev) => prev + 1);
+```
+
+개념적인 흐름
+
+```text
+0
+↓
+Update 1
+↓
+1
+↓
+Update 2
+↓
+2
+↓
+Update 3
+↓
+3
+```
+
+Setter에 전달하는 함수는 이전 State를 받아 다음 State를 반환하는 함수
+
+```text
+previousState
+↓
+Updater Function
+↓
+nextState
+```
+
+### Common Mistakes
+
+Functional Update 함수에서 값을 반환하지 않는 경우
+
+잘못된 방식
+
+```jsx
+setCount((prevCount) => {
+  prevCount + 1;
+});
+```
+
+`{}`를 사용하는 Arrow Function은 직접 `return` 필요
+
+수정
+
+```jsx
+setCount((prevCount) => {
+  return prevCount + 1;
+});
+```
+
+또는
+
+```jsx
+setCount((prevCount) => prevCount + 1);
+```
+
+---
+
+이전 State를 직접 수정하는 방식으로 생각
+
+```jsx
+setCount((prevCount) => {
+  prevCount++;
+  return prevCount;
+});
+```
+
+숫자는 Primitive 값이라 동작 결과 자체는 만들어질 수 있지만 Functional Update에서는 새로운 값을 계산해서 반환하는 형태로 작성하는 것이 명확
+
+```jsx
+setCount((prevCount) => prevCount + 1);
+```
+
+### Core Concept
+
+기본 State Update
+
+```jsx
+setCount(count + 1);
+```
+
+```text
+현재 렌더링의 State
+↓
+새로운 State 계산
+```
+
+연속 Update
+
+```jsx
+setCount((prev) => prev + 1);
+setCount((prev) => prev + 1);
+setCount((prev) => prev + 1);
+```
+
+```text
+0
+↓
+1
+↓
+2
+↓
+3
+```
+
+핵심 패턴
+
+```text
+이전 State를 기반으로 변경
+↓
+Functional State Update 사용
+```
+
+```jsx
+setState((prevState) => nextState);
+```
+
+React State Update에서 중요한 기준
+
+```text
+Previous State
+↓
+Updater Function
+↓
+Next State
+↓
+Re-render
+↓
+Updated UI
+```
