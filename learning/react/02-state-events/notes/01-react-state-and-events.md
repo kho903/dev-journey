@@ -3471,3 +3471,1030 @@ Setter
 ↓
 Re-render
 ```
+
+## 7. Array State and Immutable Updates
+
+### Array State
+
+React State에는 배열도 저장 가능
+
+```jsx
+const [skills, setSkills] = useState(["Java", "Spring Boot", "React"]);
+```
+
+현재 State
+
+```text
+skills
+├── Java
+├── Spring Boot
+└── React
+```
+
+배열 State도 일반 JavaScript 배열처럼 `map()`, `filter()` 등의 메서드 사용 가능
+
+```jsx
+function SkillList() {
+  const [skills, setSkills] = useState(["Java", "Spring Boot", "React"]);
+
+  return (
+    <ul>
+      {skills.map((skill) => (
+        <li key={skill}>{skill}</li>
+      ))}
+    </ul>
+  );
+}
+```
+
+### Do not Mutate Array State Directly
+
+Array State도 객체 State와 마찬가지로 직접 수정하지 않는 것이 원칙
+
+잘못된 방식
+
+```jsx
+skills.push("Docker");
+```
+
+또는
+
+```jsx
+skills.pop();
+```
+
+```jsx
+skills.splice(0, 1);
+```
+
+이러한 메서드는 기존 배열 자체를 변경하는 Mutable Method
+
+```text
+기존 Array State
+↓
+push / pop / splice
+↓
+기존 배열 자체 변경
+↓
+Mutation
+```
+
+React State에서는 기존 배열을 직접 수정하기보다 새로운 배열을 생성하여 Setter 함수에 전달
+
+### Adding an Item
+
+기존 배열에 새로운 Item을 추가할 때 Spread Syntax 사용 가능
+
+```jsx
+setSkills([...skills, "Docker"]);
+```
+
+동작
+
+```text
+기존 skills
+
+[
+  "Java",
+  "Spring Boot",
+  "React"
+]
+
+↓
+
+...skills
+
+↓
+
+기존 Item 복사
+
+↓
+
+"Docker" 추가
+
+↓
+
+새로운 배열 생성
+```
+
+결과
+
+```text
+[
+  "Java",
+  "Spring Boot",
+  "React",
+  "Docker"
+]
+```
+
+### Functional Array State Update
+
+새로운 배열 State가 이전 State를 기반으로 만들어지는 경우 Functional State Update 사용 권장
+
+```jsx
+setSkills((prevSkills) => [...prevSkills, "Docker"]);
+```
+
+구조
+
+```text
+Previous Array State
+↓
+prevSkills
+↓
+Spread
+↓
+새로운 Item 추가
+↓
+새로운 Array 반환
+↓
+State Update
+```
+
+배열에 Item을 추가하는 경우 자주 사용하는 형태
+
+```jsx
+setItems((prevItems) => [...prevItems, newItem]);
+```
+
+### Adding an Object to Array State
+
+배열 State의 Item이 객체일 수도 있음
+
+```jsx
+const [users, setUsers] = useState([
+  {
+    id: 1,
+    name: "JIHUN",
+  },
+]);
+```
+
+새로운 User 추가
+
+```jsx
+const newUser = {
+  id: 2,
+  name: "MINJI",
+};
+
+setUsers((prevUsers) => [...prevUsers, newUser]);
+```
+
+결과
+
+```text
+users
+├── id: 1 / JIHUN
+└── id: 2 / MINJI
+```
+
+기존 배열을 수정하지 않고 새로운 배열 생성
+
+### Prepending an Item
+
+새로운 Item을 배열 앞에 추가할 수도 있음
+
+```jsx
+setSkills((prevSkills) => ["Docker", ...prevSkills]);
+```
+
+결과
+
+```text
+[
+  "Docker",
+  "Java",
+  "Spring Boot",
+  "React"
+]
+```
+
+Spread 위치에 따라 추가되는 위치가 달라짐
+
+```text
+[...prevArray, newItem]
+→ 뒤에 추가
+
+[newItem, ...prevArray]
+→ 앞에 추가
+```
+
+### Removing an Item with filter()
+
+배열에서 Item을 삭제할 때 `filter()` 사용 가능
+
+```jsx
+const [users, setUsers] = useState([
+  { id: 1, name: "JIHUN" },
+  { id: 2, name: "MINJI" },
+  { id: 3, name: "YUNA" },
+]);
+```
+
+`id === 2`인 User 삭제
+
+```jsx
+setUsers((prevUsers) => prevUsers.filter((user) => user.id !== 2));
+```
+
+`filter()`는 조건이 `true`인 Item만 포함한 새로운 배열 반환
+
+```text
+id = 1
+1 !== 2
+→ true
+→ 유지
+
+id = 2
+2 !== 2
+→ false
+→ 제거
+
+id = 3
+3 !== 2
+→ true
+→ 유지
+```
+
+결과
+
+```text
+[
+  { id: 1, name: "JIHUN" },
+  { id: 3, name: "YUNA" }
+]
+```
+
+### Remove Handler
+
+삭제할 ID를 Argument로 전달 가능
+
+```jsx
+function handleDelete(id) {
+  setUsers((prevUsers) => prevUsers.filter((user) => user.id !== id));
+}
+```
+
+Button에서 호출
+
+```jsx
+<button onClick={() => handleDelete(user.id)}>Delete</button>
+```
+
+동작 흐름
+
+```text
+Delete Click
+↓
+handleDelete(user.id)
+↓
+filter()
+↓
+해당 id를 제외한 새로운 배열 생성
+↓
+setUsers()
+↓
+State Update
+↓
+Re-render
+```
+
+### Updating an Item with map()
+
+배열 내부 특정 Item을 수정할 때 `map()` 사용 가능
+
+```jsx
+const [users, setUsers] = useState([
+  { id: 1, name: "JIHUN", active: false },
+  { id: 2, name: "MINJI", active: false },
+]);
+```
+
+`id === 1` User의 `active` 값을 `true`로 변경
+
+```jsx
+setUsers((prevUsers) =>
+  prevUsers.map((user) =>
+    user.id === 1
+      ? {
+          ...user,
+          active: true,
+        }
+      : user,
+  ),
+);
+```
+
+동작
+
+```text
+user.id === 1
+↓
+true
+↓
+새로운 User 객체 생성
+↓
+active 변경
+
+user.id !== 1
+↓
+기존 user 그대로 반환
+```
+
+결과
+
+```text
+[
+  {
+    id: 1,
+    name: "JIHUN",
+    active: true
+  },
+  {
+    id: 2,
+    name: "MINJI",
+    active: false
+  }
+]
+```
+
+### Why map() Is Useful for Updates
+
+`map()`은 기존 배열을 기반으로 새로운 배열을 반환
+
+```text
+Previous Array
+↓
+map()
+↓
+각 Item 확인
+↓
+변경 대상
+→ 새로운 Item 반환
+
+변경 대상 아님
+→ 기존 Item 반환
+↓
+New Array
+```
+
+따라서 Array State의 특정 Item을 Immutable하게 수정할 때 자주 사용
+
+### Toggle an Item
+
+특정 User의 Boolean Property를 Toggle하는 예시
+
+```jsx
+function handleToggle(id) {
+  setUsers((prevUsers) =>
+    prevUsers.map((user) =>
+      user.id === id
+        ? {
+            ...user,
+            active: !user.active,
+          }
+        : user,
+    ),
+  );
+}
+```
+
+동작
+
+```text
+id 일치
+↓
+기존 user 복사
+↓
+active 반전
+↓
+새로운 객체 반환
+```
+
+예시
+
+```text
+false
+↓
+true
+```
+
+다시 실행
+
+```text
+true
+↓
+false
+```
+
+### Array State CRUD
+
+배열 State에서 자주 사용하는 기본 작업
+
+```text
+Create
+→ Spread
+
+Read / Render
+→ map()
+
+Find
+→ find()
+
+Filter
+→ filter()
+
+Update
+→ map()
+
+Delete
+→ filter()
+```
+
+추가
+
+```jsx
+setUsers((prevUsers) => [...prevUsers, newUser]);
+```
+
+수정
+
+```jsx
+setUsers((prevUsers) =>
+  prevUsers.map((user) =>
+    user.id === targetId
+      ? {
+          ...user,
+          name: "MINJI",
+        }
+      : user,
+  ),
+);
+```
+
+삭제
+
+```jsx
+setUsers((prevUsers) => prevUsers.filter((user) => user.id !== targetId));
+```
+
+### Array State with Controlled Input
+
+Input 값을 이용하여 새로운 Item을 배열에 추가 가능
+
+```jsx
+function SkillForm() {
+  const [skills, setSkills] = useState([]);
+  const [skill, setSkill] = useState("");
+
+  function handleSubmit(event) {
+    event.preventDefault();
+
+    setSkills((prevSkills) => [...prevSkills, skill]);
+
+    setSkill("");
+  }
+
+  return (
+    <section>
+      <form onSubmit={handleSubmit}>
+        <input
+          value={skill}
+          onChange={(event) => setSkill(event.target.value)}
+        />
+
+        <button type="submit">Add</button>
+      </form>
+
+      <ul>
+        {skills.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+```
+
+동작 흐름
+
+```text
+Input 입력
+↓
+skill State
+↓
+Submit
+↓
+handleSubmit
+↓
+prevSkills 복사
+↓
+skill 추가
+↓
+새로운 배열 생성
+↓
+setSkills
+↓
+skill 초기화
+↓
+Re-render
+```
+
+### Empty Input Validation
+
+빈 문자열을 배열에 추가하지 않도록 확인 가능
+
+```jsx
+function handleSubmit(event) {
+  event.preventDefault();
+
+  if (skill.trim() === "") {
+    return;
+  }
+
+  setSkills((prevSkills) => [...prevSkills, skill]);
+
+  setSkill("");
+}
+```
+
+```text
+skill.trim() === ""
+↓
+true
+↓
+return
+↓
+추가하지 않음
+```
+
+### Array of Objects with Form
+
+실제 애플리케이션에서는 단순 문자열보다 객체를 배열 State에 추가하는 경우가 많음
+
+```jsx
+const [users, setUsers] = useState([]);
+const [name, setName] = useState("");
+```
+
+User 생성
+
+```jsx
+function handleSubmit(event) {
+  event.preventDefault();
+
+  const newUser = {
+    id: Date.now(),
+    name,
+  };
+
+  setUsers((prevUsers) => [...prevUsers, newUser]);
+  setName("");
+}
+```
+
+결과 예시
+
+```text
+users
+↓
+[
+  {
+    id: ...,
+    name: "JIHUN"
+  }
+]
+```
+
+### Why id Is Important
+
+객체 배열을 수정하거나 삭제하려면 각 Item을 구분할 값 필요
+
+```jsx
+{
+  id: 1,
+  name: "JIHUN",
+}
+```
+
+삭제
+
+```jsx
+user.id !== targetId;
+```
+
+수정
+
+```jsx
+user.id === targetId;
+```
+
+렌더링
+
+```jsx
+<User key={user.id} user={user} />
+```
+
+동일한 `id`가 다음 여러 역할에서 사용 가능
+
+```text
+Item 식별
+↓
+수정 대상 찾기
+
+Item 식별
+↓
+삭제 대상 찾기
+
+Item 식별
+↓
+React key
+```
+
+### Do Not Use push() for State
+
+잘못된 방식
+
+```jsx
+function addSkill() {
+  skills.push("Docker");
+  setSkills(skills);
+}
+```
+
+`push()`는 기존 배열 자체를 변경
+
+또한 `setSkills(skills)`에서 기존 배열과 같은 Reference를 다시 전달
+
+```text
+기존 skills
+↓
+push()
+↓
+기존 배열 Mutation
+↓
+같은 Reference
+↓
+setSkills(skills);
+```
+
+권장 방식
+
+```jsx
+function addSkill() {
+  setSkills((prevSkills) => [...prevSkills, "Docker"]);
+}
+```
+
+```text
+Previous State
+↓
+Copy
+↓
+새 Item 추가
+↓
+New Array
+↓
+Setter
+```
+
+### Mutable vs Immutable Array Methods
+
+기존 배열을 직접 변경하는 대표적인 메서드
+
+```text
+push()
+pop()
+shift()
+unshift()
+splice()
+sort()
+reverse()
+```
+
+React State에 사용할 때는 기존 State를 직접 변경하지 않도록 주의
+
+새로운 배열을 반환하는 대표적인 방법
+
+```text
+map()
+filter()
+slice()
+Spread Syntax
+```
+
+예시
+
+```jsx
+const newArray = [...prevArray, newItem];
+```
+
+```jsx
+const filteredArray = prevArray.filter(...);
+```
+
+```jsx
+const updatedArray = prevArray.map(...);
+```
+
+### sort() with Array State
+
+`sort()`는 기존 배열 자체를 변경하므로 State에 바로 사용하지 않는 것이 좋음
+
+잘못된 방식
+
+```jsx
+users.sort((a, b) => a.name.localeCompare(b.name));
+
+setUsers(users);
+```
+
+새로운 배열을 먼저 생성한 뒤 정렬
+
+```jsx
+setUsers((prevUsers) =>
+  [...prevUsers].sort((a, b) => a.name.localeCompare(b.name)),
+);
+```
+
+흐름
+
+```text
+Previous Array
+↓
+Spread
+↓
+New Array
+↓
+sort()
+↓
+Sorted New Array
+↓
+State Update
+```
+
+### reverse() with Array State
+
+`reverse()` 역시 기존 배열을 변경
+
+잘못된 방식
+
+```jsx
+users.reverse();
+
+setUsers(users);
+```
+
+권장 방식
+
+```jsx
+setUsers((prevUsers) => [...prevUsers].reverse());
+```
+
+또는
+
+```jsx
+setUsers((prevUsers) => {
+  const newUsers = [...prevUsers];
+
+  newUsers.reverse();
+
+  return newUsers;
+});
+```
+
+### Nested Objects in Array State
+
+배열 안에 객체가 있고 객체 안에 다시 중첩 객체가 존재할 수도 있음
+
+```jsx
+const [users, setUsers] = useState([
+  {
+    id: 1,
+    name: "JIHUN",
+    address: {
+      city: "Seoul",
+      country: "Korea",
+    },
+  },
+]);
+```
+
+특정 User의 `city` 변경
+
+```jsx
+setUsers((prevUsers) =>
+  prevUsers.map((user) =>
+    user.id === 1
+      ? {
+          ...user,
+          address: {
+            ...user.address,
+            city: "Busan",
+          },
+        }
+      : user,
+  ),
+);
+```
+
+필요한 단계마다 새로운 값 생성
+
+```text
+Array
+↓
+map()
+↓
+변경할 User 객체 복사
+↓
+address 객체 복사
+↓
+city 변경
+↓
+새로운 User 객체
+↓
+새로운 Array
+```
+
+### Common Mistakes
+
+Array State 직접 수정
+
+```jsx
+users.push(newUser);
+```
+
+수정
+
+```jsx
+setUsers((prevUsers) => [...prevUsers, newUser]);
+```
+
+---
+
+삭제를 위해 `splice()` 사용
+
+```jsx
+users.splice(index, 1);
+```
+
+기존 배열을 직접 변경
+
+삭제할 조건을 기준으로 `filter()` 사용
+
+```jsx
+setUsers((prevUsers) => prevUsers.filter((user) => user.id !== targetId));
+```
+
+---
+
+특정 Item을 직접 변경
+
+```jsx
+users[0].name = "MINJI";
+```
+
+수정 대상은 `map()`으로 찾아 새로운 객체 생성
+
+```jsx
+setUsers((prevUsers) =>
+  prevUsers.map((user) =>
+    user.id === targetId
+      ? {
+          ...user,
+          name: "MINJI",
+        }
+      : user,
+  ),
+);
+```
+
+---
+
+`map()` 결과를 Setter에 전달하지 않는 경우
+
+```jsx
+users.map((user) => ({
+  ...user,
+  active: true,
+}));
+```
+
+새로운 배열은 생성되지만 State는 변경되지 않음
+
+Setter에 전달 필요
+
+```jsx
+setUsers((prevUsers) =>
+  prevUsers.map((user) => ({
+    ...user,
+    active: true,
+  })),
+);
+```
+
+### Core Concept
+
+Array State
+
+```jsx
+const [users, setUsers] = useState([]);
+```
+
+추가
+
+```jsx
+setUsers((prevUsers) => [...prevUsers, newUser]);
+```
+
+삭제
+
+```jsx
+setUsers((prevUsers) => prevUsers.filter((user) => user.id !== targetId));
+```
+
+수정
+
+```jsx
+setUsers((prevUsers) =>
+  prevUsers.map((user) =>
+    user.id === targetId
+      ? {
+          ...user,
+          name: "MINJI",
+        }
+      : user,
+  ),
+);
+```
+
+핵심 흐름
+
+```text
+Previous Array State
+↓
+map / filter / Spread
+↓
+New Array
+↓
+Setter
+↓
+State Update
+↓
+Re-render
+```
+
+배열 State 변경의 핵심
+
+```text
+기존 배열 직접 수정 X
+
+새로운 배열 생성 O
+```
+
+주요 패턴
+
+```text
+Add
+→ Spread
+
+Update
+→ map()
+
+Delete
+→ filter()
+```
+
+객체 배열 Update
+
+```text
+Array
+↓
+map()
+↓
+Target Item 확인
+↓
+Object Spread
+↓
+Property 변경
+↓
+New Object
+↓
+New Array
+```
+
+React Array State를 다룰 때 중요한 원칙
+
+```text
+State Array
+↓
+Treat as Immutable
+↓
+Create New Array
+↓
+Setter
+↓
+Re-render
+```
