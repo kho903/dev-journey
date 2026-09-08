@@ -2540,3 +2540,934 @@ Re-render
 ↓
 Updated UI
 ```
+
+## 6. Object State and Immutable Updates
+
+### Object State
+
+React State에는 객체도 저장 가능
+
+```jsx
+const [user, setUser] = useState({
+  name: "JIHUN",
+  role: "Backend Developer",
+  age: 29,
+});
+```
+
+현재 State
+
+```text
+user
+├── name: JIHUN
+├── role: Backend Developer
+└── age: 29
+```
+
+JSX에서 일반 객체와 동일하게 Property 접근 가능
+
+```jsx
+function Profile() {
+  const [user, setUser] = useState({
+    name: "JIHUN",
+    role: "Backend Developer",
+    age: 29,
+  });
+
+  return (
+    <section>
+      <h2>{user.name}</h2>
+      <p>{user.role}</p>
+      <p>{user.age}</p>
+    </section>
+  );
+}
+```
+
+### Do Not Mutate State Directly
+
+객체 State의 Property를 직접 변경하는 방식 사용 금지
+
+잘못된 방식
+
+```jsx
+user.name = "MINJI";
+```
+
+또는
+
+```jsx
+function changeName() {
+  user.name = "MINJI";
+}
+```
+
+객체 자체를 직접 수정하는 방식
+
+```text
+기존 State 객체
+↓
+직접 수정
+↓
+같은 객체 Reference 유지
+```
+
+React State는 기존 State를 직접 수정하기보다 새로운 값을 만들어 Setter 함수에 전달하는 방식 사용
+
+### Immutable Update
+
+Immutable Update는 기존 State를 직접 수정하지 않고 새로운 객체를 생성하여 State를 변경하는 방식
+
+예시
+
+```jsx
+setUser({
+  ...user,
+  name: "MINJI",
+});
+```
+
+`...user`는 기존 객체의 Property를 새로운 객체에 복사
+
+```text
+기존 user
+
+{
+  name: "JIHUN",
+  role: "Backend Developer",
+  age: 29
+}
+
+↓
+
+...user
+
+↓
+
+{
+  name: "JIHUN",
+  role: "Backend Developer",
+  age: 29
+}
+```
+
+이후 `name`을 다시 작성
+
+```jsx
+{
+  ...user,
+  name: "MINJI",
+}
+```
+
+결과
+
+```text
+{
+  name: "MINJI",
+  role: "Backend Developer",
+  age: 29
+}
+```
+
+기존 객체를 수정하지 않고 새로운 객체 생성
+
+### Spread Syntax
+
+객체 State Update에서 Spread Syntax 자주 사용
+
+```jsx
+const user = {
+  name: "JIHUN",
+  role: "Backend Developer",
+  age: 29,
+};
+```
+
+복사
+
+```jsx
+const newUser = {
+  ...user,
+};
+```
+
+Property 변경
+
+```jsx
+const newUser = {
+  ...user,
+  age: 30,
+};
+```
+
+결과
+
+```text
+name: JIHUN
+role: Backend Developer
+age: 30
+```
+
+뒤에서 작성한 Property가 앞에서 복사한 같은 이름의 Property를 덮어씀
+
+따라서 순서 중요
+
+```jsx
+{
+  ...user,
+  name: "MINJI",
+}
+```
+
+```text
+name = MINJI
+```
+
+반대로
+
+```jsx
+{
+  name: "MINJI",
+  ...user,
+}
+```
+
+기존 `user.name`이 뒤에서 다시 복사되므로
+
+```text
+name = JIHUN
+```
+
+이 될 수 있음
+
+### Updating One Property
+
+객체 State의 일부 Property만 변경하는 경우에도 전체 객체를 새로 생성
+
+```jsx
+function changeRole() {
+  setUser({
+    ...user,
+    role: "Full Stack Developer",
+  });
+}
+```
+
+동작
+
+```text
+기존 State
+
+{
+  name: "JIHUN",
+  role: "Backend Developer",
+  age: 29
+}
+
+↓
+
+Spread
+
+↓
+
+기존 Property 복사
+
+↓
+
+role만 새로운 값으로 덮어쓰기
+
+↓
+
+새로운 객체 생성
+
+↓
+
+setUser(newObject)
+
+↓
+
+Re-render
+```
+
+### Why Spread is Needed
+
+다음 방식은 기존 Property를 유지하지 않음
+
+```jsx
+setUser({
+  name: "MINJI",
+});
+```
+
+새로운 State는
+
+```text
+{
+  name: "MINJI"
+}
+```
+
+만 존재
+
+기존
+
+```text
+role
+age
+```
+
+Property는 새로운 객체에 포함되지 않음
+
+기존 Property를 유지하면서 일부만 변경하려면
+
+```jsx
+setUser({
+  ...user,
+  name: "MINJI",
+});
+```
+
+사용
+
+### Functional Object State Update
+
+새로운 객체 State가 이전 State에 의존하는 경우 Functional State Update 사용 가능
+
+```jsx
+setUser((prevUser) => ({
+  ...prevUser,
+  age: prevUser.age + 1,
+}));
+```
+
+구조
+
+```text
+Previous User State
+↓
+prevUser
+↓
+Spread
+↓
+변경할 Property 계산
+↓
+새로운 객체 반환
+↓
+State Update
+```
+
+예시
+
+```jsx
+function increaseAge() {
+  setUser((prevUser) => ({
+    ...prevUser,
+    age: prevUser.age + 1,
+  }));
+}
+```
+
+초기값
+
+```text
+age = 29
+```
+
+실행
+
+```text
+prevUser.age = 29
+↓
+29 + 1
+↓
+age = 30
+```
+
+### Parentheses in Object Return
+
+Arrow Function에서 객체를 바로 반환할 때 `()` 사용
+
+```jsx
+setUser((prevUser) => ({
+  ...prevUser,
+  age: prevUser.age + 1,
+}));
+```
+
+여기서
+
+```jsx
+({
+  ...
+})
+```
+
+형태는 객체를 바로 반환한다는 의미
+
+다음처럼 `{}`만 사용하면 함수 Body로 해석
+
+```jsx
+setUser((prevUser) => {
+  ...prevUser
+})
+```
+
+올바르지 않은 형태
+
+직접 `return`을 사용하는 경우
+
+```jsx
+setUser((prevUser) => {
+  return {
+    ...prevUser,
+    age: prevUser.age + 1,
+  };
+});
+```
+
+두 형태 모두 가능
+
+```jsx
+setUser((prevUser) => ({
+  ...prevUser,
+  age: prevUser.age + 1,
+}));
+```
+
+### Object State with Event
+
+예시
+
+```jsx
+import { useState } from "react";
+
+function Profile() {
+  const [user, setUser] = useState({
+    name: "JIHUN",
+    role: "Backend Developer",
+  });
+
+  function handleChangeRole() {
+    setUser({
+      ...user,
+      role: "Full Stack Developer",
+    });
+  }
+
+  return (
+    <section>
+      <h2>{user.name}</h2>
+      <p>{user.role}</p>
+
+      <button onClick={handleChangeRole}>Change Role</button>
+    </section>
+  );
+}
+```
+
+동작 흐름
+
+```text
+Click
+↓
+handleChangeRole
+↓
+기존 user 복사
+↓
+role 변경
+↓
+새로운 객체 생성
+↓
+setUser()
+↓
+State Update
+↓
+Re-render
+```
+
+### Object State with Controlled Inputs
+
+여러 Form 값을 하나의 객체 State로 관리 가능
+
+```jsx
+const [form, setForm] = useState({
+  name: "",
+  email: "",
+});
+```
+
+Name Input 변경
+
+```jsx
+function handleNameChange(event) {
+  setForm({
+    ...form,
+    name: event.target.value,
+  });
+}
+```
+
+Email Input 변경
+
+```jsx
+function handleEmailChange(event) {
+  setForm({
+    ...form,
+    email: event.target.value,
+  });
+}
+```
+
+전체 예시
+
+```jsx
+function SignupForm() {
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+  });
+
+  function handleNameChange(event) {
+    setForm({
+      ...form,
+      name: event.target.value,
+    });
+  }
+
+  function handleEmailChange(event) {
+    setForm({
+      ...form,
+      email: event.target.value,
+    });
+  }
+
+  return (
+    <form>
+      <input type="text" value={form.name} onChange={handleNameChange} />
+
+      <input type="email" value={form.email} onChange={handleEmailChange} />
+    </form>
+  );
+}
+```
+
+데이터 구조
+
+```text
+form State
+├── name
+└── email
+```
+
+각 Input이 변경될 때 기존 객체를 유지하면서 해당 Property만 변경
+
+### Dynamic Property Update
+
+여러 Input을 하나의 Event Handler로 처리 가능
+
+Input에 `name` Attribute 지정
+
+```jsx
+<input name="name" value={form.name} onChange={handleChange} />
+<input name="email" value={form.email} onChange={handleChange} />
+```
+
+Event Handler
+
+```jsx
+function handleChange(event) {
+  const { name, value } = event.target;
+
+  setForm((prevForm) => ({
+    ...prevForm,
+    [name]: value,
+  }));
+}
+```
+
+`[name]`은 Computed Property Name
+
+Name Input에서 Event 발생
+
+```text
+event.target.name = "name"
+event.target.value = "JIHUN"
+```
+
+따라서
+
+```jsx
+[name]: value
+```
+
+는 개념적으로
+
+```text
+name: "JIHUN"
+```
+
+과 같은 결과
+
+Email Input에서는
+
+```text
+event.target.name = "email"
+```
+
+이므로
+
+```text
+email: value
+```
+
+Property 변경
+
+### Dynamic Form Example
+
+```jsx
+function SignupForm() {
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+  });
+
+  function handleChange(event) {
+    const { name, value } = event.target;
+
+    setForm((prevForm) => ({
+      ...prevForm,
+      [name]: value,
+    }));
+  }
+
+  return (
+    <form>
+      <input
+        type="text"
+        name="name"
+        value={form.name}
+        onChange={handleChange}
+      />
+
+      <input
+        type="email"
+        name="email"
+        value={form.email}
+        onChange={handleChange}
+      />
+    </form>
+  );
+}
+```
+
+동작 흐름
+
+```text
+Input 변경
+↓
+onChange
+↓
+handleChange
+↓
+name / value 추출
+↓
+기존 form State 복사
+↓
+해당 Property 변경
+↓
+새로운 객체 생성
+↓
+setForm
+↓
+Re-render
+```
+
+### Nested Object State
+
+객체 내부에 객체가 존재할 수 있음
+
+```jsx
+const [user, setUser] = useState({
+  name: "JIHUN",
+  address: {
+    city: "Seoul",
+    country: "Korea",
+  },
+});
+```
+
+`city`를 변경할 때 단순히 최상위 객체만 Spread하면 부족
+
+잘못된 형태
+
+```jsx
+setUser({
+  ...user,
+  address: {
+    city: "Busan",
+  },
+});
+```
+
+이 경우 기존
+
+```text
+country: Korea
+```
+
+가 사라짐
+
+중첩 객체도 별도로 복사 필요
+
+```jsx
+setUser({
+  ...user,
+  address: {
+    ...user.address,
+    city: "Busan",
+  },
+});
+```
+
+결과
+
+```text
+user
+├── name: JIHUN
+└── address
+    ├── city: Busan
+    └── country: Korea
+```
+
+### Spread Syntax Is Shallow Copy
+
+Spread Syntax는 객체의 모든 중첩 구조를 자동으로 깊게 복사하지 않음
+
+```jsx
+const newUser = {
+  ...user,
+};
+
+console.log(user === newUser); // false
+console.log(user.address === newUser.address); // true
+```
+
+최상위 Property는 복사되지만 중첩 객체는 별도로 처리 필요
+
+따라서 중첩된 값을 변경하는 경우 변경되는 경로의 객체를 각각 복사
+
+```jsx
+setUser((prevUser) => ({
+  ...prevUser,
+  address: {
+    ...prevUser.address,
+    city: "Busan",
+  },
+}));
+```
+
+### Direct Mutation vs Immutable Update
+
+잘못된 방식
+
+```jsx
+user.name = "MINJI";
+
+setUser(user);
+```
+
+기존 객체를 직접 수정하면 이전 State와 새로운 State가 같은 객체 Reference를 사용할 수 있어 React의 State 변경 추적과 렌더링을 예측하기 어려워짐
+
+```text
+기존 객체
+↓
+Mutation
+↓
+같은 객체 사용
+```
+
+권장 방식
+
+```jsx
+setUser((prevUser) => ({
+  ...prevUser,
+  name: "MINJI",
+}));
+```
+
+```text
+기존 State
+↓
+복사
+↓
+새로운 값 적용
+↓
+새로운 객체
+↓
+Setter
+```
+
+### Common Mistakes
+
+객체 State를 직접 변경
+
+```jsx
+user.name = "MINJI";
+```
+
+수정
+
+```jsx
+setUser((prevUser) => ({
+  ...prevUser,
+  name: "MINJI",
+}));
+```
+
+기존 Property를 Spread하지 않음
+
+```jsx
+setUser({
+  name: "MINJI",
+});
+```
+
+다른 Property까지 유지해야 하는 경우
+
+```jsx
+setUser((prevUser) => ({
+  ...prevUser,
+  name: "MINJI",
+}));
+```
+
+Spread 순서 오류
+
+```jsx
+setUser({
+  name: "MINJI",
+  ...user,
+});
+```
+
+`user.name`이 뒤에서 다시 덮어쓸 수 있음
+
+수정
+
+```jsx
+setUser({
+  ...user,
+  name: "MINJI",
+});
+```
+
+중첩 객체 복사 누락
+
+```jsx
+setUser({
+  ...user,
+  address: {
+    city: "Busan",
+  },
+});
+```
+
+기존 `address`의 다른 Property를 유지해야 한다면
+
+```jsx
+setUser({
+  ...user,
+  address: {
+    ...user.address,
+    city: "Busan",
+  },
+});
+```
+
+### Core Concept
+
+Object State
+
+```jsx
+const [user, setUser] = useState({
+  name: "JIHUN",
+  role: "Backend Developer",
+});
+```
+
+잘못된 방식
+
+```jsx
+user.name = "MINJI";
+```
+
+권장 방식
+
+```jsx
+setUser((prevUser) => ({
+  ...prevUser,
+  name: "MINJI",
+}));
+```
+
+핵심 흐름
+
+```text
+Previous State
+↓
+Copy
+↓
+Change Required Property
+↓
+New Object
+↓
+Setter
+↓
+State Update
+↓
+Re-render
+```
+
+객체 State 변경의 핵심
+
+```text
+기존 State 직접 수정 X
+
+새로운 객체 생성 O
+```
+
+Spread Syntax
+
+```jsx
+{
+  ...prevState,
+  changedProperty: newValue,
+}
+```
+
+중첩 객체
+
+```jsx
+{
+  ...prevState,
+  nestedObject: {
+    ...prevState.nestedObject,
+    changedProperty: newValue,
+  },
+}
+```
+
+React State를 다룰 때 중요한 원칙
+
+```text
+State
+↓
+Treat as Immutable
+↓
+Create New Value
+↓
+Setter
+↓
+Re-render
+```
