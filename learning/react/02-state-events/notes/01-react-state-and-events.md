@@ -4498,3 +4498,965 @@ Setter
 ↓
 Re-render
 ```
+
+## 8. Derived State and State Design
+
+### Derived Value
+
+Derived Value는 이미 존재하는 State 또는 Props를 이용하여 계산할 수 있는 값
+
+예시
+
+```jsx
+const [firstName, setFirstName] = useState("JIHUN");
+const [lastName, setLastName] = useState("KIM");
+
+const fullName = `${firstName} ${lastName}`;
+```
+
+`fullName`은 별도의 State가 아니라 기존 State를 이용하여 계산한 값
+
+```text
+firstName State
++
+lastName State
+↓
+계산
+↓
+fullName
+```
+
+현재 값
+
+```text
+firstName = JIHUN
+lastName = KIM
+
+↓
+
+fullName = JIHUN KIM
+```
+
+### Do Not Store Unnecessary State
+
+다음처럼 `fullName`까지 별도의 State로 저장할 수도 있어 보임
+
+```jsx
+const [firstName, setFirstName] = useState("JIHUN");
+const [lastName, setLastName] = useState("KIM");
+const [fullName, setFullName] = useState("JIHUN KIM");
+```
+
+하지만 `fullName`은 이미 `firstName`과 `lastName`으로 계산 가능
+
+따라서 별도의 State로 관리할 필요가 없음
+
+```jsx
+const fullName = `${firstName} ${lastName}`;
+```
+
+State 구조
+
+```text
+필요한 State
+
+firstName
+lastName
+
+↓
+
+계산 가능한 값
+
+fullName
+```
+
+### Why Unnecessary State Is a Problem
+
+같은 정보를 여러 State에 중복해서 저장하면 값이 서로 맞지 않는 문제가 발생할 수 있음
+
+예시
+
+```jsx
+const [firstName, setFirstName] = useState("JIHUN");
+const [lastName, setLastName] = useState("KIM");
+const [fullName, setFullName] = useState("JIHUN KIM");
+```
+
+이후
+
+```jsx
+setFirstName("MINJI");
+```
+
+만 실행하면
+
+```text
+firstName = MINJI
+lastName = KIM
+fullName = JIHUN KIM
+```
+
+처럼 State 사이에 불일치 발생 가능
+
+```text
+실제 이름
+MINJI KIM
+
+fullName State
+JIHUN KIM
+```
+
+따라서 계산 가능한 값은 필요할 때 계산하는 방식이 더 단순함
+
+```jsx
+const fullName = `${firstName} ${lastName}`;
+```
+
+### Single Source of Truth
+
+같은 정보를 여러 곳에서 별도로 관리하기보다 하나의 기준 데이터에서 필요한 값을 계산하는 방식이 중요
+
+예시
+
+```jsx
+const [price, setPrice] = useState(10000);
+const [quantity, setQuantity] = useState(2);
+
+const totalPrice = price * quantity;
+```
+
+```text
+price
++
+quantity
+↓
+totalPrice 계산
+```
+
+`totalPrice`를 별도의 State로 관리하지 않음
+
+```jsx
+const [totalPrice, setTotalPrice] = useState(20000);
+```
+
+대신
+
+```jsx
+const totalPrice = price * quantity;
+```
+
+사용
+
+핵심
+
+```text
+Source State
+↓
+Derived Value
+```
+
+### Derived Boolean Value
+
+Boolean 값도 기존 State를 기준으로 계산 가능
+
+예시
+
+```jsx
+const [name, setName] = useState("");
+
+const isEmpty = name.trim() === "";
+```
+
+```text
+name
+↓
+trim()
+↓
+빈 문자열인지 확인
+↓
+isEmpty
+```
+
+Button 활성화 여부에 활용 가능
+
+```jsx
+<button disabled={isEmpty}>Submit</button>
+```
+
+전체 예시
+
+```jsx
+function NameForm() {
+  const [name, setName] = useState("");
+
+  const isEmpty = name.trim() === "";
+
+  return (
+    <form>
+      <input value={name} onChange={(event) => setName(event.target.value)} />
+
+      <button type="button" disabled={isEmpty}>
+        Submit
+      </button>
+    </form>
+  );
+}
+```
+
+`isEmpty`는 `name`으로 바로 계산 가능하므로 별도의 State 필요 없음
+
+### Derived Count
+
+배열 State의 개수도 별도 State로 저장할 필요가 없는 경우가 많음
+
+```jsx
+const [users, setUsers] = useState([
+  { id: 1, name: "JIHUN" },
+  { id: 2, name: "MINJI" },
+]);
+
+const userCount = users.length;
+```
+
+```text
+users State
+↓
+length
+↓
+userCount
+```
+
+다음처럼 중복 State를 만드는 것보다
+
+```jsx
+const [users, setUsers] = useState([]);
+const [userCount, setUserCount] = useState(0);
+```
+
+필요할 때 계산
+
+```jsx
+const userCount = users.length;
+```
+
+사용
+
+### Derived Array
+
+배열 State를 기준으로 새로운 배열을 계산할 수도 있음
+
+예시
+
+```jsx
+const [users, setUsers] = useState([
+  { id: 1, name: "JIHUN", active: true },
+  { id: 2, name: "MINJI", active: false },
+  { id: 3, name: "YUNA", active: true },
+]);
+
+const activeUsers = users.filter((user) => user.active);
+```
+
+`activeUsers`는 새로운 State가 아니라 `users`에서 계산한 값
+
+```text
+users State
+↓
+filter()
+↓
+activeUsers
+```
+
+결과
+
+```text
+JIHUN
+YUNA
+```
+
+### Derived Filtered List
+
+검색 기능에서도 같은 방식 사용 가능
+
+```jsx
+const [users, setUsers] = useState([
+  { id: 1, name: "JIHUN" },
+  { id: 2, name: "MINJI" },
+  { id: 3, name: "YUNA" },
+]);
+
+const [keyword, setKeyword] = useState("");
+
+const filteredUsers = users.filter((user) =>
+  user.name.toLowerCase().includes(keyword.toLowerCase()),
+);
+```
+
+State
+
+```text
+users
+keyword
+```
+
+Derived Value
+
+```text
+filteredUsers
+```
+
+흐름
+
+```text
+users
++
+keyword
+↓
+filter()
+↓
+filteredUsers
+↓
+Rendering
+```
+
+### Do Not Duplicate Filtered State
+
+다음처럼 원본 배열과 필터링 결과를 모두 State로 관리할 필요가 없는 경우가 많음
+
+```jsx
+const [users, setUsers] = useState([]);
+const [keyword, setKeyword] = useState("");
+const [filteredUsers, setFilteredUsers] = useState([]);
+```
+
+`filteredUsers`가 항상 `users`와 `keyword`로 계산 가능하다면
+
+```jsx
+const [users, setUsers] = useState([]);
+const [keyword, setKeyword] = useState("");
+
+const filteredUsers = users.filter((user) => user.name.includes(keyword));
+```
+
+처럼 계산해서 사용
+
+```text
+users State
++
+keyword State
+↓
+Derived filteredUsers
+```
+
+State 중복 감소
+
+### Derived Value Recalculation
+
+Component가 다시 렌더링되면 Component 함수가 다시 실행
+
+따라서 일반 변수로 작성한 Derived Value도 현재 State를 기준으로 다시 계산
+
+```jsx
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  const doubleCount = count * 2;
+
+  return (
+    <section>
+      <p>Count: {count}</p>
+      <p>Double: {doubleCount}</p>
+
+      <button onClick={() => setCount((prevCount) => prevCount + 1)}>
+        Increase
+      </button>
+    </section>
+  );
+}
+```
+
+초기 상태
+
+```text
+count = 0
+doubleCount = 0
+```
+
+Click
+
+```text
+setCount()
+↓
+count = 1
+↓
+Re-render
+↓
+Component 함수 다시 실행
+↓
+doubleCount = 1 * 2
+↓
+2
+```
+
+따라서 `doubleCount`를 State로 따로 관리할 필요가 없음
+
+### State as a Snapshot
+
+각 렌더링에서는 해당 렌더링 시점의 State 값을 사용
+
+즉 각 렌더링은 State의 특정 시점 값을 Snapshot처럼 가지고 있음
+
+예시
+
+```jsx
+const [count, setCount] = useState(0);
+```
+
+현재 렌더링
+
+```text
+count = 0
+```
+
+State Update
+
+```jsx
+setCount(1);
+```
+
+Setter를 호출해도 현재 실행 중인 렌더링의 `count` 값 자체가 즉시 변경되는 것은 아님
+
+```jsx
+function handleClick() {
+  console.log(count); // 0
+
+  setCount(1);
+
+  console.log(count); // 0
+}
+```
+
+동작 흐름
+
+```text
+현재 Render
+count = 0
+↓
+setCount(1)
+↓
+State Update 요청
+↓
+현재 Render의 count = 0
+↓
+다음 Render
+↓
+count = 1
+```
+
+이후 새로운 렌더링에서는 새로운 State 값을 사용
+
+```text
+count = 1
+```
+
+각 렌더링은 해당 시점의 State 값을 기준으로 JSX와 Derived Value를 계산
+
+```text
+State Snapshot
+↓
+JSX
++
+Derived Values
+↓
+UI
+```
+
+### Conditional Rendering with State
+
+State 값에 따라 서로 다른 UI 출력 가능
+
+예시
+
+```jsx
+function LoginStatus() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  return <section>{isLoggedIn ? <p>Welcome</p> : <p>Please Login</p>}</section>;
+}
+```
+
+흐름
+
+```text
+isLoggedIn
+↓
+true / false
+↓
+Conditional Rendering
+↓
+다른 UI 출력
+```
+
+### Conditional Rendering with &&
+
+조건이 `true`일 때만 특정 UI를 출력하고 싶은 경우 `&&` 사용 가능
+
+```jsx
+function Notification() {
+  const [hasMessage, setHasMessage] = useState(true);
+
+  return <section>{hasMessage && <p>New Message</p>}</section>;
+}
+```
+
+```text
+hasMessage = true
+↓
+New Message 출력
+
+hasMessage = false
+↓
+출력하지 않음
+```
+
+### Derived Boolean with Conditional Rendering
+
+Derived Value와 Conditional Rendering을 함께 사용할 수 있음
+
+```jsx
+function UserList() {
+  const [users, setUsers] = useState([]);
+
+  const hasUsers = users.length > 0;
+
+  return (
+    <section>
+      {hasUsers ? (
+        <ul>
+          {users.map((user) => (
+            <li key={user.id}>{user.name}</li>
+          ))}
+        </ul>
+      ) : (
+        <p>No Users</p>
+      )}
+    </section>
+  );
+}
+```
+
+`hasUsers`는 State가 아님
+
+```text
+users State
+↓
+users.length > 0
+↓
+hasUsers
+↓
+Conditional Rendering
+```
+
+### State Design
+
+Component를 설계할 때 모든 값을 State로 만드는 것이 좋은 방식은 아님
+
+먼저 해당 값이 실제로 State가 필요한지 판단
+
+State가 필요한 대표적인 경우
+
+```text
+렌더링 사이에서 값을 유지해야 하는 값
+
+사용자 Interaction 또는 외부 데이터에 의해 변경되는 값
+
+값이 변경되었을 때 UI에 반영되어야 하는 값
+```
+
+예시
+
+```text
+Input 값
+→ State
+
+Toggle 상태
+→ State
+
+선택된 Item
+→ State
+
+서버에서 받아온 데이터
+→ State
+```
+
+### Values That Usually Do Not Need State
+
+다른 State나 Props로 계산 가능한 값은 일반적으로 별도의 State가 필요하지 않음
+
+예시
+
+```text
+firstName + lastName
+→ fullName
+
+price × quantity
+→ totalPrice
+
+users.length
+→ userCount
+
+users.filter(...)
+→ filteredUsers
+
+name.trim() === ""
+→ isEmpty
+```
+
+이런 값은 Derived Value로 계산 가능
+
+### State or Derived Value
+
+예시 1
+
+```jsx
+const [price, setPrice] = useState(10000);
+const [quantity, setQuantity] = useState(2);
+```
+
+다음 값
+
+```text
+totalPrice
+```
+
+는
+
+```jsx
+const totalPrice = price * quantity;
+```
+
+로 계산 가능
+
+따라서 Derived Value
+
+---
+
+예시 2
+
+```jsx
+const [isOpen, setIsOpen] = useState(false);
+```
+
+`isOpen`은 사용자가 버튼을 클릭하여 변경
+
+다른 값으로부터 단순히 계산되는 값이 아님
+
+따라서 State
+
+---
+
+예시 3
+
+```jsx
+const [users, setUsers] = useState([]);
+```
+
+User 개수
+
+```jsx
+const userCount = users.length;
+```
+
+Derived Value
+
+---
+
+예시 4
+
+검색어
+
+```jsx
+const [keyword, setKeyword] = useState("");
+```
+
+사용자가 직접 변경하므로 State
+
+검색 결과
+
+```jsx
+const filteredUsers = users.filter(...);
+```
+
+기존 `users`와 `keyword`를 이용해 계산 가능하므로 Derived Value
+
+### Minimal State
+
+State는 필요한 최소한의 값만 저장하는 것이 좋음
+
+예시
+
+```text
+users
+keyword
+```
+
+만 State로 관리
+
+```jsx
+const [users, setUsers] = useState([]);
+const [keyword, setKeyword] = useState("");
+```
+
+필요한 나머지 값 계산
+
+```jsx
+const filteredUsers = users.filter(...);
+const userCount = users.length;
+const hasUsers = users.length > 0;
+```
+
+구조
+
+```text
+State
+├── users
+└── keyword
+
+Derived Values
+├── filteredUsers
+├── userCount
+└── hasUsers
+```
+
+State가 단순해지고 값 사이의 불일치 가능성도 감소
+
+### Keep Related Data Consistent
+
+같은 의미의 데이터를 여러 State에 중복 저장하지 않는 것이 중요
+
+좋지 않은 예시
+
+```jsx
+const [users, setUsers] = useState([]);
+const [userCount, setUserCount] = useState(0);
+```
+
+User 추가 시
+
+```jsx
+setUsers((prevUsers) => [...prevUsers, newUser]);
+
+setUserCount((prevCount) => prevCount + 1);
+```
+
+두 State를 항상 함께 정확하게 변경해야 함
+
+한쪽 Update를 빠뜨리면
+
+```text
+users.length = 3
+userCount = 2
+```
+
+처럼 불일치 가능
+
+대신
+
+```jsx
+const [users, setUsers] = useState([]);
+
+const userCount = users.length;
+```
+
+사용
+
+```text
+users
+↓
+Single Source of Truth
+↓
+userCount 계산
+```
+
+### State Design Questions
+
+새로운 값을 State로 만들기 전에 다음 순서로 생각
+
+```text
+1. 이 값이 시간이 지나면서 변경되는가?
+
+2. 변경되었을 때 UI에 영향을 주는가?
+
+3. 다른 State 또는 Props에서 계산 가능한가?
+```
+
+다른 값에서 계산 가능하다면
+
+```text
+State 추가 X
+Derived Value 사용
+```
+
+직접 변경되는 독립적인 값이라면
+
+```text
+State 사용 고려
+```
+
+### Common Mistakes
+
+계산 가능한 값을 State로 중복 저장
+
+```jsx
+const [firstName, setFirstName] = useState("");
+const [lastName, setLastName] = useState("");
+const [fullName, setFullName] = useState("");
+```
+
+수정
+
+```jsx
+const [firstName, setFirstName] = useState("");
+const [lastName, setLastName] = useState("");
+
+const fullName = `${firstName} ${lastName}`;
+```
+
+---
+
+배열의 개수를 별도의 State로 관리
+
+```jsx
+const [users, setUsers] = useState([]);
+const [userCount, setUserCount] = useState(0);
+```
+
+수정
+
+```jsx
+const [users, setUsers] = useState([]);
+
+const userCount = users.length;
+```
+
+---
+
+필터링 결과를 별도의 State로 중복 관리
+
+```jsx
+const [users, setUsers] = useState([]);
+const [keyword, setKeyword] = useState("");
+const [filteredUsers, setFilteredUsers] = useState([]);
+```
+
+계산 가능한 경우
+
+```jsx
+const [users, setUsers] = useState([]);
+const [keyword, setKeyword] = useState("");
+
+const filteredUsers = users.filter((user) => user.name.includes(keyword));
+```
+
+사용
+
+### Core Concept
+
+State
+
+```text
+Component가 렌더링 사이에서 기억해야 하며
+변경 시 UI에 영향을 주는 데이터
+```
+
+Derived Value
+
+```text
+State 또는 Props로부터 계산 가능한 값
+```
+
+예시
+
+```jsx
+const [price, setPrice] = useState(10000);
+const [quantity, setQuantity] = useState(2);
+
+const totalPrice = price * quantity;
+```
+
+구조
+
+```text
+State
+├── price
+└── quantity
+      ↓
+   계산
+      ↓
+Derived Value
+└── totalPrice
+```
+
+State Design의 핵심
+
+```text
+필요한 최소 State만 저장
+↓
+계산 가능한 값은 계산
+↓
+중복 State 제거
+↓
+Single Source of Truth 유지
+```
+
+Conditional Rendering
+
+```text
+State / Derived Value
+↓
+Condition
+↓
+UI 선택
+```
+
+React Component의 기본 흐름
+
+```text
+Props
++
+State
+↓
+Derived Values
+↓
+JSX
+↓
+UI
+```
+
+State Update 발생
+
+```text
+Event
+↓
+Setter
+↓
+State Update
+↓
+Re-render
+↓
+Derived Values 다시 계산
+↓
+JSX 다시 계산
+↓
+Updated UI
+```
+
+핵심 질문
+
+```text
+이 값이 정말 State여야 하는가?
+
+다른 State 또는 Props에서 계산할 수 있는가?
+
+계산 가능하다면 Derived Value 사용
+```
