@@ -1,3 +1,4 @@
+import InteractiveProfile from "./mission/01-interactive-profile/InteractiveProfile";
 import Counter from "./practice/01-counter/Counter";
 import Toggle from "./practice/02-toggle/Toggle";
 import ControlledInput from "./practice/03-controlled-input/ControlledInput";
@@ -12,6 +13,7 @@ function App() {
       <ControlledInput />
       <SimpleForm />
       <ArrayState />
+      <InteractiveProfile />
     </section>
   );
 }
