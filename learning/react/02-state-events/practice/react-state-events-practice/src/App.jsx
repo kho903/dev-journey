@@ -6,6 +6,7 @@ import Toggle from "./practice/02-toggle/Toggle";
 import ControlledInput from "./practice/03-controlled-input/ControlledInput";
 import SimpleForm from "./practice/04-simple-form/SimpleForm";
 import ArrayState from "./practice/05-array-state/ArrayState";
+import UserManagement from "./mission/04-user-management/UserManagement";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
       <InteractiveProfile />
       <FormDashboard />
       <SkillManager />
+      <UserManagement />
     </section>
   );
 }
