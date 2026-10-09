@@ -8,6 +8,7 @@ import SimpleForm from "./practice/04-simple-form/SimpleForm";
 import ArrayState from "./practice/05-array-state/ArrayState";
 import UserManagement from "./mission/04-user-management/UserManagement";
 import StateDashboard from "./mission/05-state-dashboard/StateDashboard";
+import Review from "./review/01-state-debugging/Review";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
       <SkillManager />
       <UserManagement />
       <StateDashboard />
+      <Review />
     </section>
   );
 }
