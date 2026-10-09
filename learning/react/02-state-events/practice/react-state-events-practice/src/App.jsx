@@ -7,6 +7,7 @@ import ControlledInput from "./practice/03-controlled-input/ControlledInput";
 import SimpleForm from "./practice/04-simple-form/SimpleForm";
 import ArrayState from "./practice/05-array-state/ArrayState";
 import UserManagement from "./mission/04-user-management/UserManagement";
+import StateDashboard from "./mission/05-state-dashboard/StateDashboard";
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
       <FormDashboard />
       <SkillManager />
       <UserManagement />
+      <StateDashboard />
     </section>
   );
 }
