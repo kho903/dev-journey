@@ -37,6 +37,13 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
+    // 의도적으로 취소한 요청이라면
+    // 오류 로그를 출력하지 않음
+    if (axios.isCancel(error)) {
+      return Promise.reject(error);
+    }
+
+    // 실제 HTTP / Network Error만 출력
     console.error(
       "[Response Error]",
       error.response?.status ?? error.code ?? error.message,
